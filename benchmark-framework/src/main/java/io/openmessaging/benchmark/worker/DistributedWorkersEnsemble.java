@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -61,7 +62,6 @@ import io.openmessaging.benchmark.worker.commands.TopicsInfo;
 import static org.asynchttpclient.Dsl.*;
 
 public class DistributedWorkersEnsemble implements Worker {
-
     private final static int REQUEST_TIMEOUT_MS = 300_000;
     private final static int READ_TIMEOUT_MS = 300_000;
     private final List<String> workers;
@@ -143,6 +143,11 @@ public class DistributedWorkersEnsemble implements Worker {
 
         log.info("Number of producers configured for the topic: " + numberOfUsedProducerWorkers);
 
+        topicsPerProducerMap.forEach((s, tpcs) -> {
+            log.info("Producer assignment {} => {}", s, tpcs);
+        });
+
+
         List<CompletableFuture<Void>> futures = topicsPerProducerMap.keySet().stream().map(producer -> {
             try {
                 return sendPost(producer, "/create-producers",
@@ -196,12 +201,25 @@ public class DistributedWorkersEnsemble implements Worker {
         List<List<TopicSubscription>> subscriptionsPerConsumer = ListPartition
                 .partitionList(overallConsumerAssignment.topicsSubscriptions, consumerWorkers.size());
         Map<String, ConsumerAssignment> topicsPerWorkerMap = Maps.newHashMap();
-        int i = 0;
+        int i = 0, assignmemts = 0;
         for (List<TopicSubscription> tsl : subscriptionsPerConsumer) {
             ConsumerAssignment individualAssignement = new ConsumerAssignment();
             individualAssignement.topicsSubscriptions = tsl;
             topicsPerWorkerMap.put(consumerWorkers.get(i++), individualAssignement);
+            if (individualAssignement.topicsSubscriptions.isEmpty()) {
+                assignmemts++;
+            }
         }
+
+        log.info("Number of consumers configured for the topic: " + assignmemts);
+
+        topicsPerWorkerMap.forEach((s, assignments) -> {
+            if (!assignments.topicsSubscriptions.isEmpty()) {
+                String topics = assignments.topicsSubscriptions.stream().map(TopicSubscription::toString).collect(Collectors.joining(",", "[", "]"));
+                log.info("Consumer assignment {} => {}", s, topics);
+            }
+        });
+
 
         List<CompletableFuture<Void>> futures = topicsPerWorkerMap.keySet().stream().map(consumer -> {
             try {
