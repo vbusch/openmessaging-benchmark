@@ -162,6 +162,7 @@ public class Benchmark {
                     generator.close();
                 } catch (Exception e) {
                     log.error("Failed to run the workload '{}' for driver '{}'", workload.name, driverConfig, e);
+                    System.exit(1);
                 } finally {
                     try {
                         worker.stopAll();
