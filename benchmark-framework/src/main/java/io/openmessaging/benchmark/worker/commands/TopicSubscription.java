@@ -32,4 +32,13 @@ public class TopicSubscription {
         this.partition = partition;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TopicSubscription{");
+        sb.append("topic='").append(topic).append('\'');
+        sb.append(", subscription='").append(subscription).append('\'');
+        sb.append(", partition=").append(partition);
+        sb.append('}');
+        return sb.toString();
+    }
 }
