@@ -35,10 +35,10 @@ public class PeriodStats {
     public long totalMessagesReceived = 0;
 
     @JsonIgnore
-    public Histogram publishLatency = new Histogram(TimeUnit.SECONDS.toMicros(60), 5);
+    public Histogram publishLatency = HistogramFactory.create(TimeUnit.SECONDS.toMicros(60));
     public byte[] publishLatencyBytes;
 
     @JsonIgnore
-    public Histogram endToEndLatency = new Histogram(TimeUnit.HOURS.toMicros(12), 5);
+    public Histogram endToEndLatency = HistogramFactory.create(TimeUnit.HOURS.toMicros(12));
     public byte[] endToEndLatencyBytes;
 }
