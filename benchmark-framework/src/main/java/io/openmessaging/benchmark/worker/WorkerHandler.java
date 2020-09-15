@@ -67,8 +67,8 @@ public class WorkerHandler {
         app.get("/counters-stats", this::handleCountersStats);
         app.post("/reset-stats", this::handleResetStats);
 
-        app.exception(RuntimeException.class, (e, ctx) -> {
-            log.error("Request handler: {} - Exception: {}", ctx.path(), e.getMessage());
+        app.exception(Exception.class, (e, ctx) -> {
+            log.error("Request handler: {} - Exception: {}", ctx.path(), e.getMessage(), e);
             ctx.status(HttpURLConnection.HTTP_INTERNAL_ERROR);
         });
     }
